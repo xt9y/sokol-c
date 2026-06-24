@@ -1,4 +1,10 @@
-#define SOKOL_METAL
+#if defined(__APPLE__)
+    #define SOKOL_METAL
+#elif defined(_WIN32)
+    #define SOKOL_D3D11
+#else
+    #define SOKOL_GLCORE
+#endif
 #define SOKOL_IMPL
 #include "sokol/sokol_gfx.h"
 #include "sokol/sokol_gp.h"
