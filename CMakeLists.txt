@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.2)
-project(vorschau C)
+project(vorschau C OBJC)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
