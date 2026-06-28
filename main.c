@@ -1,77 +1,73 @@
-#if defined(__APPLE__)
-    #define SOKOL_METAL
-#elif defined(_WIN32)
-    #define SOKOL_D3D11
-#else
-    #define SOKOL_GLCORE
-#endif
-#define SOKOL_IMPL
-#include "sokol/sokol_gfx.h"
-#include "sokol/sokol_gp.h"
-#include "sokol/sokol_app.h"
-#include "sokol/sokol_glue.h"
-#include "sokol/sokol_log.h"
+#include "sokol.h"
+#include "level.h"
+#include "cam.h"
 
-#include <stdio.h>          // for fprintf()
-#include <stdlib.h>         // for exit()
-#include <math.h>           // for sinf() and cosf()
+#include "1.h"
 
-static void frame(void) 
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_LEVELS 16
+
+static level_data_t g_levels[MAX_LEVELS] = {0};
+static unsigned int g_current_level = 0;
+static camera_t g_cam;
+static sg_pass_action g_pass_action;
+
+static void frame(void)
 {
-    int w = sapp_width(), h = sapp_height();
-    float ratio = (float)w/(float)h;
-    
-    float time = sapp_frame_count() * sapp_frame_duration();
-    float r = sinf(time)*0.5+0.5, 
-          g = cosf(time)*0.5+0.5;
+    float dt = sapp_frame_duration();
+    camera_update(&g_cam, dt);
 
-    sgp_begin(w, h);
+    sg_begin_pass(&(sg_pass){
+        .action = g_pass_action,
+        .swapchain = sglue_swapchain()
+    });
 
-    sgp_viewport(0, 0, w, h); sgp_project(-ratio, ratio, 1.0f, -1.0f);
-    sgp_set_color(0.1f, 0.1f, 0.1f, 1.0f); sgp_clear(); 
-    sgp_reset_color();
+    camera_apply(&g_cam);
+    level_render(&g_levels[0]);
+    sgl_draw();
 
-    sgp_rotate_at(time, 0.0f, 0.0f); 
-    sgp_set_color(r, g, 1.0f, 1.0f); sgp_draw_filled_rect(-0.5f, -0.5f, 1.0f, 1.0f); 
-
-    sg_pass pass = {.swapchain = sglue_swapchain()};
-    sg_begin_pass(&pass);
-    sgp_flush();
-    sgp_end();
     sg_end_pass();
     sg_commit();
 }
 
-static void init(void) 
+static void init(void)
 {
-    sg_desc sgdesc = {
+    sg_setup(&(sg_desc){
         .environment = sglue_environment(),
         .logger.func = slog_func
-    };
-    sg_setup(&sgdesc);
+    });
     if (!sg_isvalid()) {
         fprintf(stderr, "Failed to create Sokol GFX context!\n");
         exit(-1);
     }
 
-    sgp_desc sgpdesc = {0};
-    sgp_setup(&sgpdesc);
-    if (!sgp_is_valid()) {
-        fprintf(stderr, "Failed to create Sokol GP context: %s\n", sgp_get_error_message(sgp_get_last_error()));
+    sgl_setup(&(sgl_desc_t){ .logger.func = slog_func });
+    if (!sg_isvalid()) {
+        fprintf(stderr, "Failed to create Sokol GL context!\n");
         exit(-1);
     }
+
+    g_pass_action = (sg_pass_action){
+        .colors[0] = { .load_action = SG_LOADACTION_CLEAR, .clear_value = { 0.1f, 0.1f, 0.1f, 1.0f } }
+    };
+
+    g_levels[g_current_level] = load_1(); g_current_level++;
+
+    camera_init(&g_cam, (vec3){ 0.0f, 0.0f, 5.0f }, 0.0f);
 }
 
-static void cleanup(void) 
+static void cleanup(void)
 {
-    sgp_shutdown();
+    sgl_shutdown();
     sg_shutdown();
 }
 
-sapp_desc sokol_main(int argc, char* argv[]) 
+sapp_desc sokol_main(int argc, char* argv[])
 {
     (void)argc; (void)argv;
-    return (sapp_desc) {
-        .init_cb = init, .frame_cb = frame, .cleanup_cb = cleanup, .window_title = "Sokol GP", .logger.func = slog_func,
+    return (sapp_desc){
+        .init_cb = init, .frame_cb = frame, .cleanup_cb = cleanup, .event_cb = camera_event, .window_title = "demo", .logger.func = slog_func,
     };
 }

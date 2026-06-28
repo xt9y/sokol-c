@@ -6,7 +6,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(vorschau main.c)
+add_executable(vorschau main.c level.c cam.c)
 
 if(APPLE)
     set_source_files_properties(main.c PROPERTIES LANGUAGE OBJC)
