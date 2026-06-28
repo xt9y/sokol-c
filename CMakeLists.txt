@@ -4,12 +4,13 @@ project(vorschau C OBJC)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-add_executable(vorschau main.c level.c cam.c)
+file(GLOB SOURCES src/*.c)
+add_executable(vorschau ${SOURCES})
 
 if(APPLE)
-    set_source_files_properties(main.c PROPERTIES LANGUAGE OBJC)
+    set_source_files_properties(src/main.c PROPERTIES LANGUAGE OBJC)
     target_link_libraries(vorschau PRIVATE
         "-framework Cocoa"
         "-framework QuartzCore"

@@ -23,5 +23,5 @@ clean:
 
 add:
 	git status
-	git add CMakeLists.txt Makefile README.md main.c
+	git add CMakeLists.txt Makefile README.md src/*.c
 	git status
