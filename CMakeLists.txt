@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 4.2)
-project(vorschau C OBJC)
+if(APPLE)
+    project(vorschau C OBJC)
+else()
+    project(vorschau C)
+endif()
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

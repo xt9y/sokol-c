@@ -4,11 +4,19 @@
 #include <math.h>
 
 #define CAM_SPEED 8.0f
-#define MOUSE_SENS 0.004f
 
 static bool g_keys[512] = {false};
 static float g_mx = 0, g_my = 0;
 static bool g_locked = false;
+
+#if defined(__APPLE__)
+// macOS uses Cocoa NSEvent delta values (system-accelerated pixel deltas)
+static float g_mouse_sens = 0.004f;
+#else
+// Linux/Win32 use raw HID input counts (unaccelerated hardware values)
+// which are ~10-20x larger than macOS deltas for the same movement
+static float g_mouse_sens = 0.0003f;
+#endif
 
 void camera_event(const sapp_event* ev)
 {
@@ -47,8 +55,8 @@ void camera_init(camera_t* cam, vec3 pos, float yaw)
 void camera_update(camera_t* cam, float dt)
 {
     if (g_locked) {
-        cam->yaw   += g_mx * MOUSE_SENS;
-        cam->pitch -= g_my * MOUSE_SENS;
+        cam->yaw   += g_mx * g_mouse_sens;
+        cam->pitch -= g_my * g_mouse_sens;
         if (cam->pitch > 1.5f)  cam->pitch = 1.5f;
         if (cam->pitch < -1.5f) cam->pitch = -1.5f;
     }
