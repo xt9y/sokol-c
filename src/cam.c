@@ -23,19 +23,14 @@ void camera_event(const sapp_event* ev)
     switch (ev->type) {
     case SAPP_EVENTTYPE_KEY_DOWN:
         if ((size_t)ev->key_code < 512) g_keys[ev->key_code] = true;
-        if (ev->key_code == SAPP_KEYCODE_ESCAPE && g_locked) {
-            sapp_lock_mouse(false);
-            g_locked = false;
+        if (ev->key_code == SAPP_KEYCODE_ESCAPE) sapp_quit();
+        if (ev->key_code == SAPP_KEYCODE_TAB) {
+            sapp_lock_mouse(!g_locked);
+            g_locked = !g_locked;
         }
         break;
     case SAPP_EVENTTYPE_KEY_UP:
         if ((size_t)ev->key_code < 512) g_keys[ev->key_code] = false;
-        break;
-    case SAPP_EVENTTYPE_MOUSE_DOWN:
-        if (ev->mouse_button == SAPP_MOUSEBUTTON_LEFT) {
-            sapp_lock_mouse(true);
-            g_locked = true;
-        }
         break;
     case SAPP_EVENTTYPE_MOUSE_MOVE:
         if (g_locked) { g_mx += ev->mouse_dx; g_my += ev->mouse_dy; }
